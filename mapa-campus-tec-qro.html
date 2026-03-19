@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa Campus Tec Querétaro · Best Buddies</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Playfair+Display:ital,wght@0,700;1,500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue:    #1565C0; --blue-p:   #E3F0FF;
+  --green:   #2E7D32; --green-p:  #E8F5E9;
+  --orange:  #E65100; --orange-p: #FFF3E0;
+  --purple:  #6A1B9A; --purple-p: #F3E5F5;
+  --teal:    #00695C; --teal-p:   #E0F2F1;
+  --pink:    #AD1457; --pink-p:   #FCE4EC;
+  --amber:   #F57F17; --amber-p:  #FFFDE7;
+  --bg: #F4F6F0; --white: #fff; --dark: #1C2B1E; --gray: #607060;
+  --border: rgba(46,125,50,0.13);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--dark);overflow-x:hidden;}
+
+/* TOPBAR */
+.topbar{background:var(--dark);color:rgba(255,255,255,.55);font-size:.73rem;font-weight:500;padding:.4rem 1.5rem;display:flex;gap:1.5rem;flex-wrap:wrap;}
+.topbar strong{color:#81C784;}
+
+/* HEADER */
+header{background:var(--white);border-bottom:1.5px solid var(--border);padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;gap:1rem;flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand-icon{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#2E7D32,#00897B);display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.brand h1{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;line-height:1.2;}
+.brand p{font-size:.7rem;color:var(--gray);}
+.hpills{display:flex;gap:7px;flex-wrap:wrap;}
+.hpill{border-radius:50px;padding:.25rem .8rem;font-size:.7rem;font-weight:700;}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 96px);}
+
+/* SIDEBAR */
+.sidebar{background:var(--white);border-right:1.5px solid var(--border);overflow-y:auto;max-height:calc(100vh - 96px);position:sticky;top:96px;}
+.sh{padding:1rem 1.25rem .75rem;border-bottom:1.5px solid var(--border);}
+.sh h2{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin-bottom:.2rem;}
+.sh p{font-size:.75rem;color:var(--gray);line-height:1.5;}
+.slist{padding:.6rem;}
+.scard{border-radius:11px;padding:.85rem 1rem;margin-bottom:.5rem;cursor:pointer;transition:all .2s;border:1.5px solid transparent;position:relative;overflow:hidden;}
+.scard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:currentColor;opacity:.55;}
+.scard:hover{transform:translateX(3px);}
+.scard.active{border-color:currentColor !important;box-shadow:0 3px 14px rgba(0,0,0,.09);}
+.sw{font-size:.65rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.65;margin-bottom:2px;}
+.stitle{font-size:.9rem;font-weight:700;display:flex;align-items:center;gap:5px;margin-bottom:3px;}
+.sdate{font-size:.72rem;font-weight:700;opacity:.75;display:flex;align-items:center;gap:3px;}
+.sloc{font-size:.72rem;opacity:.65;margin-top:3px;display:flex;align-items:center;gap:3px;}
+.sact{font-size:.7rem;opacity:.55;margin-top:3px;}
+
+/* MAIN */
+.main{padding:1.5rem;}
+.mtop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem;gap:1rem;flex-wrap:wrap;}
+.mtitle h2{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;}
+.mtitle p{font-size:.78rem;color:var(--gray);margin-top:3px;}
+.legend{display:flex;flex-wrap:wrap;gap:7px;}
+.leg{display:flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;background:var(--white);border-radius:50px;padding:.25rem .65rem;border:1px solid var(--border);}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
+
+/* MAP */
+.map-wrap{background:var(--white);border-radius:18px;border:1.5px solid var(--border);overflow:hidden;position:relative;box-shadow:0 4px 28px rgba(0,0,0,.06);}
+.campus-svg{width:100%;display:block;}
+.tooltip{position:absolute;background:var(--dark);color:#fff;border-radius:9px;padding:.65rem .9rem;font-size:.78rem;pointer-events:none;opacity:0;transition:opacity .18s;max-width:210px;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.22);}
+.tooltip.on{opacity:1;}
+.tooltip h4{font-size:.83rem;font-weight:700;margin-bottom:3px;}
+.tooltip p{opacity:.75;line-height:1.35;font-size:.73rem;}
+
+/* DETAIL */
+.detail{background:var(--white);border-radius:14px;border:1.5px solid var(--border);padding:1.1rem 1.4rem;margin-top:1.1rem;display:none;animation:fadeUp .25s ease;}
+.detail.on{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.dh{display:flex;align-items:center;gap:10px;margin-bottom:.9rem;}
+.dicon{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+.dw{font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.55;}
+.dtitle{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;}
+.ddate{font-size:.75rem;font-weight:700;margin-top:2px;}
+.dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;}
+.ditem{background:var(--bg);border-radius:9px;padding:.7rem .85rem;}
+.ditem h5{font-size:.62rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gray);margin-bottom:3px;}
+.ditem p{font-size:.82rem;font-weight:600;line-height:1.4;}
+.dclose{margin-left:auto;background:none;border:1px solid var(--border);border-radius:7px;padding:.25rem .65rem;font-family:'DM Sans',sans-serif;font-size:.72rem;cursor:pointer;color:var(--gray);transition:all .2s;}
+.dclose:hover{background:var(--bg);}
+
+/* TIMELINE */
+.tl-section{background:var(--white);border-radius:14px;border:1.5px solid var(--border);padding:1.1rem 1.4rem;margin-top:1.1rem;}
+.tl-section h3{font-size:.85rem;font-weight:700;margin-bottom:.9rem;}
+.tl{display:flex;align-items:flex-start;gap:0;overflow-x:auto;padding-bottom:.3rem;}
+.tlstep{flex:1;min-width:80px;display:flex;flex-direction:column;align-items:center;position:relative;cursor:pointer;}
+.tlstep::before{content:'';position:absolute;top:15px;left:50%;right:-50%;height:2px;background:var(--border);z-index:0;}
+.tlstep:last-child::before{display:none;}
+.tlstep.done::before{background:#81C784;}
+.tldot{width:30px;height:30px;border-radius:50%;background:var(--white);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.78rem;z-index:1;position:relative;transition:all .2s;}
+.tlstep.active .tldot{border-color:var(--green);background:var(--green);color:#fff;transform:scale(1.18);}
+.tlstep.done .tldot{border-color:#81C784;background:var(--green-p);}
+.tllabel{font-size:.58rem;font-weight:700;text-align:center;margin-top:4px;color:var(--gray);max-width:60px;line-height:1.3;}
+.tllabel small{display:block;font-weight:400;opacity:.75;font-size:.55rem;}
+.tlstep.active .tllabel{color:var(--green);}
+
+@media(max-width:860px){.layout{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;}.dgrid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span>🎓 <strong>Tec de Monterrey</strong> Campus Querétaro × Best Buddies México</span>
+  <span>📅 Semestre <strong>Feb 9 – Jun 14, 2026</strong> · Sesiones quincenales</span>
+  <span>📍 Av. Epigmenio González s/n, Querétaro</span>
+</div>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">🗺️</div>
+    <div>
+      <h1>Mapa de Actividades · Campus Querétaro</h1>
+      <p>Proyecto Best Buddies — Amistades inclusivas dentro del campus</p>
+    </div>
+  </div>
+  <div class="hpills">
+    <span class="hpill" style="background:#E8F5E9;color:#2E7D32;">7 sesiones quincenales</span>
+    <span class="hpill" style="background:#FFF3E0;color:#E65100;">Feb – Jun 2026</span>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sh">
+    <h2>Cronograma quincenal</h2>
+    <p>Clic en una sesión para ver dónde se realiza en el campus real.</p>
+  </div>
+  <div class="slist" id="slist"></div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="mtop">
+    <div class="mtitle">
+      <h2>Campus Tec · Querétaro</h2>
+      <p>Edificios y espacios reales — haz clic para ver detalles de cada sesión</p>
+    </div>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:#2E7D32"></div>Áreas verdes / lago</div>
+      <div class="leg"><div class="leg-dot" style="background:#1565C0"></div>Edificios académicos</div>
+      <div class="leg"><div class="leg-dot" style="background:#E65100"></div>Deportivo</div>
+      <div class="leg"><div class="leg-dot" style="background:#6A1B9A"></div>Centro Estudiantil</div>
+      <div class="leg"><div class="leg-dot" style="background:#AD1457"></div>Cafetería / Food Court</div>
+    </div>
+  </div>
+
+  <div class="map-wrap" id="mapWrap">
+    <div class="tooltip" id="tip"><h4 id="tth"></h4><p id="ttp"></p></div>
+    <svg class="campus-svg" viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="grid" width="25" height="25" patternUnits="userSpaceOnUse">
+          <path d="M25 0L0 0 0 25" fill="none" stroke="rgba(46,125,50,0.05)" stroke-width="1"/>
+        </pattern>
+        <filter id="sh"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.1)"/></filter>
+        <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+
+      <!-- FONDO CAMPUS -->
+      <rect width="960" height="600" fill="#EFF3EB"/>
+      <rect width="960" height="600" fill="url(#grid)"/>
+
+      <!-- CALLES PRINCIPALES -->
+      <!-- Av. Epigmenio González (horizontal norte) -->
+      <rect x="0" y="0" width="960" height="38" fill="#CFD3C8"/>
+      <text x="480" y="23" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#6B7569" font-weight="700" letter-spacing="0.8">AV. EPIGMENIO GONZÁLEZ</text>
+      <!-- Prol. Tecnológico (vertical derecha) -->
+      <rect x="890" y="0" width="70" height="600" fill="#CFD3C8"/>
+      <text x="925" y="300" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#6B7569" font-weight="700" letter-spacing="0.5" transform="rotate(90,925,300)">PROL. TECNOLÓGICO</text>
+      <!-- Acceso principal (vertical izq) -->
+      <rect x="0" y="38" width="50" height="562" fill="#CFD3C8"/>
+      <text x="25" y="320" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#6B7569" font-weight="600" transform="rotate(-90,25,320)">ACCESO / PROL. EZEQUIEL MONTES</text>
+
+      <!-- CANAL PLUVIAL -->
+      <path d="M 50 560 Q 400 540 890 555" stroke="#7CB9D4" stroke-width="10" fill="none" opacity="0.6"/>
+      <text x="300" y="572" font-family="DM Sans,sans-serif" font-size="8" fill="#5B9BB5" font-weight="600">Canal Pluvial</text>
+
+      <!-- LAGO -->
+      <ellipse cx="190" cy="300" rx="70" ry="50" fill="#B3D9F0" stroke="#7CB9D4" stroke-width="1.5" filter="url(#sh)"/>
+      <text x="190" y="296" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#1A6B8A" font-weight="700">Lago</text>
+      <text x="190" y="308" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#1A6B8A" opacity="0.7">campus</text>
+
+      <!-- ÁREA VERDE CENTRAL -->
+      <rect x="270" y="250" width="120" height="90" rx="14" fill="#C8DFC0" stroke="#5A9E4A" stroke-width="1" opacity="0.8"/>
+      <circle cx="310" cy="275" r="13" fill="#4A8C3A" opacity="0.45"/>
+      <circle cx="345" cy="268" r="16" fill="#3E7A2F" opacity="0.4"/>
+      <circle cx="370" cy="280" r="11" fill="#4A8C3A" opacity="0.45"/>
+      <circle cx="300" cy="310" r="12" fill="#3E7A2F" opacity="0.4"/>
+      <circle cx="355" cy="318" r="14" fill="#4A8C3A" opacity="0.4"/>
+      <text x="330" y="340" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#1B5E20" font-weight="700">Área Verde</text>
+
+      <!-- ===== EDIFICIOS REALES ===== -->
+
+      <!-- BIBLIOTECA (Edificio 6) -->
+      <g id="bld-biblioteca" class="bzone" data-bld="biblioteca" style="cursor:pointer">
+        <rect x="58" y="48" width="110" height="75" rx="8" fill="#DCEEFB" stroke="#1565C0" stroke-width="1.5" filter="url(#sh)"/>
+        <rect x="68" y="58" width="20" height="16" rx="2" fill="#90C4F0" opacity=".8"/>
+        <rect x="94" y="58" width="20" height="16" rx="2" fill="#90C4F0" opacity=".8"/>
+        <rect x="120" y="58" width="20" height="16" rx="2" fill="#90C4F0" opacity=".8"/>
+        <rect x="68" y="80" width="20" height="16" rx="2" fill="#90C4F0" opacity=".8"/>
+        <rect x="94" y="80" width="20" height="16" rx="2" fill="#90C4F0" opacity=".8"/>
+        <rect x="120" y="80" width="20" height="16" rx="2" fill="#90C4F0" opacity=".8"/>
+        <text x="113" y="114" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#0D47A1" font-weight="700">Biblioteca</text>
+      </g>
+
+      <!-- EDIFICIO I -->
+      <g id="bld-ed1" class="bzone" data-bld="ed1" style="cursor:pointer">
+        <rect x="58" y="140" width="80" height="60" rx="7" fill="#DCEEFB" stroke="#1565C0" stroke-width="1.5" filter="url(#sh)"/>
+        <rect x="66" y="150" width="16" height="12" rx="2" fill="#90C4F0" opacity=".8"/>
+        <rect x="88" y="150" width="16" height="12" rx="2" fill="#90C4F0" opacity=".8"/>
+        <rect x="110" y="150" width="16" height="12" rx="2" fill="#90C4F0" opacity=".8"/>
+        <text x="98" y="213" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#0D47A1" font-weight="700">Edificio I</text>
+      </g>
+
+      <!-- EDIFICIO II -->
+      <g id="bld-ed2" class="bzone" data-bld="ed2" style="cursor:pointer">
+        <rect x="155" y="140" width="80" height="60" rx="7" fill="#DCEEFB" stroke="#1565C0" stroke-width="1.5" filter="url(#sh)"/>
+        <rect x="163" y="150" width="16" height="12" rx="2" fill="#90C4F0" opacity=".8"/>
+        <rect x="185" y="150" width="16" height="12" rx="2" fill="#90C4F0" opacity=".8"/>
+        <rect x="207" y="150" width="16" height="12" rx="2" fill="#90C4F0" opacity=".8"/>
+        <text x="195" y="213" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#0D47A1" font-weight="700">Edificio II</text>
+      </g>
+
+      <!-- EDIFICIOS III-IV-V (aulas principales) -->
+      <g id="bld-aulas" class="bzone" data-bld="aulas" style="cursor:pointer">
+        <rect x="420" y="48" width="200" height="95" rx="9" fill="#DCEEFB" stroke="#1565C0" stroke-width="2" filter="url(#sh)"/>
+        <rect x="432" y="60" width="22" height="18" rx="3" fill="#90C4F0" opacity=".8"/>
+        <rect x="460" y="60" width="22" height="18" rx="3" fill="#90C4F0" opacity=".8"/>
+        <rect x="488" y="60" width="22" height="18" rx="3" fill="#90C4F0" opacity=".8"/>
+        <rect x="516" y="60" width="22" height="18" rx="3" fill="#90C4F0" opacity=".8"/>
+        <rect x="544" y="60" width="22" height="18" rx="3" fill="#90C4F0" opacity=".8"/>
+        <rect x="572" y="60" width="22" height="18" rx="3" fill="#90C4F0" opacity=".8"/>
+        <rect x="432" y="84" width="22" height="18" rx="3" fill="#90C4F0" opacity=".8"/>
+        <rect x="460" y="84" width="22" height="18" rx="3" fill="#90C4F0" opacity=".8"/>
+        <rect x="488" y="84" width="22" height="18" rx="3" fill="#90C4F0" opacity=".8"/>
+        <rect x="516" y="84" width="22" height="18" rx="3" fill="#90C4F0" opacity=".8"/>
+        <rect x="544" y="84" width="22" height="18" rx="3" fill="#90C4F0" opacity=".8"/>
+        <rect x="572" y="84" width="22" height="18" rx="3" fill="#90C4F0" opacity=".8"/>
+        <rect x="490" y="118" width="22" height="20" rx="3" fill="#1565C0" opacity=".35"/>
+        <text x="520" y="130" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#0D47A1" font-weight="700">Edificios III · IV · V</text>
+        <text x="520" y="141" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#0D47A1" opacity=".7">Aulas principales</text>
+        <!-- Badge S3 S7 -->
+        <rect x="422" y="50" width="30" height="16" rx="5" fill="#1565C0"/>
+        <text x="437" y="61" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="white" font-weight="700">S3·S7</text>
+      </g>
+
+      <!-- CENTRO DE CONGRESOS -->
+      <g id="bld-congresos" class="bzone" data-bld="congresos" style="cursor:pointer">
+        <rect x="640" y="48" width="130" height="85" rx="9" fill="#F3E5F5" stroke="#6A1B9A" stroke-width="1.5" filter="url(#sh)"/>
+        <polygon points="705,52 770,75 770,82 640,82 640,75" fill="#CE93D8" opacity=".5"/>
+        <rect x="650" y="88" width="28" height="22" rx="3" fill="#BA68C8" opacity=".4"/>
+        <rect x="685" y="88" width="28" height="22" rx="3" fill="#BA68C8" opacity=".4"/>
+        <rect x="720" y="88" width="28" height="22" rx="3" fill="#BA68C8" opacity=".4"/>
+        <text x="705" y="122" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#4A148C" font-weight="700">Centro de</text>
+        <text x="705" y="133" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#4A148C" font-weight="700">Congresos</text>
+      </g>
+
+      <!-- CENTRO ESTUDIANTIL (S4 convivencia) -->
+      <g id="bld-estudiantil" class="bzone" data-bld="estudiantil" style="cursor:pointer">
+        <rect x="640" y="152" width="130" height="100" rx="9" fill="#F3E5F5" stroke="#6A1B9A" stroke-width="2" filter="url(#sh)"/>
+        <circle cx="670" cy="185" r="16" fill="#CE93D8" opacity=".45"/>
+        <circle cx="705" cy="182" r="16" fill="#CE93D8" opacity=".45"/>
+        <circle cx="740" cy="185" r="16" fill="#CE93D8" opacity=".45"/>
+        <circle cx="670" cy="218" r="14" fill="#CE93D8" opacity=".4"/>
+        <circle cx="705" cy="220" r="14" fill="#CE93D8" opacity=".4"/>
+        <circle cx="740" cy="218" r="14" fill="#CE93D8" opacity=".4"/>
+        <rect x="648" y="240" width="114" height="8" rx="4" fill="#9C27B0" opacity=".25"/>
+        <text x="705" y="258" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#4A148C" font-weight="700">Centro Estudiantil</text>
+        <rect x="642" y="154" width="22" height="16" rx="5" fill="#6A1B9A"/>
+        <text x="653" y="165" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="white" font-weight="700">S4</text>
+      </g>
+
+      <!-- FOOD COURT / CAFETERÍA -->
+      <g id="bld-foodcourt" class="bzone" data-bld="foodcourt" style="cursor:pointer">
+        <rect x="420" y="158" width="190" height="90" rx="9" fill="#FCE4EC" stroke="#AD1457" stroke-width="1.5" filter="url(#sh)"/>
+        <rect x="432" y="170" width="50" height="36" rx="5" fill="#F48FB1" opacity=".45"/>
+        <rect x="490" y="170" width="50" height="36" rx="5" fill="#F48FB1" opacity=".45"/>
+        <rect x="548" y="170" width="50" height="36" rx="5" fill="#F48FB1" opacity=".45"/>
+        <rect x="432" y="213" width="166" height="8" rx="4" fill="#C2185B" opacity=".2"/>
+        <text x="515" y="237" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#880E4F" font-weight="700">Food Court · Cafetería</text>
+        <text x="515" y="248" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#AD1457" opacity=".7">Starbucks · Oxxo · Comedores</text>
+      </g>
+
+      <!-- CENTRO DEPORTIVO BORREGOS I + CANCHAS -->
+      <g id="bld-deportivo" class="bzone" data-bld="deportivo" style="cursor:pointer">
+        <rect x="58" y="370" width="200" height="130" rx="10" fill="#FFF3E0" stroke="#E65100" stroke-width="2" filter="url(#sh)"/>
+        <!-- Cancha básquet -->
+        <rect x="68" y="385" width="120" height="70" rx="5" fill="#FFD599" stroke="#E65100" stroke-width="1"/>
+        <line x1="128" y1="385" x2="128" y2="455" stroke="#E65100" stroke-width="1" opacity=".4"/>
+        <circle cx="128" cy="420" r="16" fill="none" stroke="#E65100" stroke-width="1" opacity=".4"/>
+        <circle cx="78" cy="400" r="7" fill="none" stroke="#C44B00" stroke-width="1.5"/>
+        <line x1="78" y1="407" x2="78" y2="418" stroke="#C44B00" stroke-width="1.5"/>
+        <circle cx="178" cy="400" r="7" fill="none" stroke="#C44B00" stroke-width="1.5"/>
+        <line x1="178" y1="407" x2="178" y2="418" stroke="#C44B00" stroke-width="1.5"/>
+        <!-- Pista atletismo -->
+        <ellipse cx="220" cy="430" rx="22" ry="50" fill="none" stroke="#FF8A50" stroke-width="3" opacity=".5"/>
+        <text x="158" y="472" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#7B2D00" font-weight="700">Centro Deportivo Borregos I</text>
+        <text x="158" y="483" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#BF360C" opacity=".8">Canchas · Pista de atletismo</text>
+        <rect x="60" y="372" width="22" height="16" rx="5" fill="#E65100"/>
+        <text x="71" y="383" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="white" font-weight="700">S2</text>
+      </g>
+
+      <!-- ESTADIO BORREGOS -->
+      <g id="bld-estadio" class="bzone" data-bld="estadio" style="cursor:pointer">
+        <rect x="280" y="370" width="150" height="100" rx="10" fill="#FFF3E0" stroke="#E65100" stroke-width="1.5" filter="url(#sh)"/>
+        <ellipse cx="355" cy="416" rx="55" ry="38" fill="#8DB86A" stroke="#5E8A2E" stroke-width="1.5"/>
+        <ellipse cx="355" cy="416" rx="30" ry="20" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+        <line x1="355" y1="378" x2="355" y2="454" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+        <text x="355" y="455" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#3E2700" font-weight="700">Estadio Borregos</text>
+        <text x="355" y="466" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#6D4C00" opacity=".75">Fútbol americano</text>
+      </g>
+
+      <!-- CENTRO DEPORTIVO BORREGOS II -->
+      <g>
+        <rect x="450" y="370" width="160" height="90" rx="9" fill="#FFF3E0" stroke="#E65100" stroke-width="1.5" filter="url(#sh)" opacity=".85"/>
+        <rect x="462" y="383" width="60" height="40" rx="4" fill="#FFD599" stroke="#E65100" stroke-width="1" opacity=".8"/>
+        <rect x="530" y="383" width="68" height="40" rx="4" fill="#FFD599" stroke="#E65100" stroke-width="1" opacity=".8"/>
+        <text x="530" y="455" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#7B2D00" font-weight="700">Centro Deportivo Borregos II</text>
+      </g>
+
+      <!-- ÁREA VERDE NORTE / CAMPUS (S1, S5) -->
+      <g id="bld-verde" class="bzone" data-bld="verde" style="cursor:pointer">
+        <rect x="270" y="155" width="130" height="200" rx="14" fill="#C8E6C9" stroke="#4BAF73" stroke-width="2" filter="url(#sh)"/>
+        <circle cx="310" cy="190" r="16" fill="#388E3C" opacity=".5"/>
+        <circle cx="355" cy="180" r="20" fill="#43A047" opacity=".45"/>
+        <circle cx="385" cy="195" r="14" fill="#388E3C" opacity=".5"/>
+        <circle cx="295" cy="255" r="14" fill="#43A047" opacity=".45"/>
+        <circle cx="345" cy="268" r="19" fill="#388E3C" opacity=".4"/>
+        <circle cx="385" cy="250" r="15" fill="#43A047" opacity=".5"/>
+        <rect x="310" y="310" width="22" height="8" rx="4" fill="#795548" opacity=".4"/>
+        <rect x="313" y="318" width="4" height="7" rx="2" fill="#795548" opacity=".35"/>
+        <rect x="325" y="318" width="4" height="7" rx="2" fill="#795548" opacity=".35"/>
+        <path d="M 335 155 Q 305 210 335 350" stroke="rgba(255,255,255,.55)" stroke-width="2.5" fill="none" stroke-dasharray="5,4"/>
+        <text x="335" y="352" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#1B5E20" font-weight="700">Área Verde</text>
+        <text x="335" y="363" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#2E7D32" opacity=".8">jardines · andadores</text>
+        <rect x="272" y="157" width="30" height="16" rx="5" fill="#2E7D32"/>
+        <text x="287" y="168" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="white" font-weight="700">S1·S5</text>
+      </g>
+
+      <!-- PREPRATEC -->
+      <g>
+        <rect x="640" y="270" width="130" height="80" rx="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1" filter="url(#sh)" opacity=".9"/>
+        <rect x="650" y="282" width="22" height="16" rx="3" fill="#A5D6A7" opacity=".7"/>
+        <rect x="678" y="282" width="22" height="16" rx="3" fill="#A5D6A7" opacity=".7"/>
+        <rect x="706" y="282" width="22" height="16" rx="3" fill="#A5D6A7" opacity=".7"/>
+        <rect x="650" y="304" width="22" height="16" rx="3" fill="#A5D6A7" opacity=".7"/>
+        <rect x="678" y="304" width="22" height="16" rx="3" fill="#A5D6A7" opacity=".7"/>
+        <text x="705" y="338" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#1B5E20" font-weight="700">PrepaTec</text>
+      </g>
+
+      <!-- RESIDENCIAS TEC -->
+      <g>
+        <rect x="640" y="370" width="130" height="90" rx="9" fill="#FFF8E1" stroke="#F9A825" stroke-width="1.5" filter="url(#sh)" opacity=".9"/>
+        <rect x="652" y="382" width="28" height="32" rx="4" fill="#FFE082" opacity=".7"/>
+        <rect x="686" y="382" width="28" height="32" rx="4" fill="#FFE082" opacity=".7"/>
+        <rect x="720" y="382" width="28" height="32" rx="4" fill="#FFE082" opacity=".7"/>
+        <text x="705" y="450" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#5D3600" font-weight="700">Residencias Tec</text>
+      </g>
+
+      <!-- ESPACIO LIBRE (S6) -->
+      <g id="bld-libre" class="bzone" data-bld="libre" style="cursor:pointer">
+        <rect x="420" y="278" width="195" height="80" rx="11" fill="#FCE4EC" stroke="#AD1457" stroke-width="2" stroke-dasharray="7,4" filter="url(#sh)"/>
+        <text x="452" y="316" font-size="20" opacity=".45">✨</text>
+        <text x="510" y="310" font-size="24" opacity=".4">🌟</text>
+        <text x="558" y="320" font-size="16" opacity=".4">🎯</text>
+        <text x="517" y="302" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9.5" fill="#880E4F" font-weight="700">Sesión Libre — S6</text>
+        <text x="517" y="315" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#AD1457" opacity=".75">Espacio a elección de los buddies</text>
+        <rect x="422" y="280" width="22" height="16" rx="5" fill="#AD1457"/>
+        <text x="433" y="291" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="white" font-weight="700">S6</text>
+      </g>
+
+      <!-- ALBERCA -->
+      <g>
+        <ellipse cx="820" cy="430" rx="45" ry="30" fill="#B3E5FC" stroke="#0288D1" stroke-width="1.5" filter="url(#sh)"/>
+        <text x="820" y="428" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#01579B" font-weight="700">Alberca</text>
+        <text x="820" y="439" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#01579B" opacity=".7">olímpica</text>
+      </g>
+
+      <!-- CAMPUS LABEL -->
+      <rect x="365" y="555" width="230" height="28" rx="8" fill="rgba(26,43,30,0.06)"/>
+      <text x="480" y="573" text-anchor="middle" font-family="Playfair Display,serif" font-size="12" fill="#2D3A2B" font-weight="700">Tec de Monterrey · Campus Querétaro</text>
+
+      <!-- BRÚJULA -->
+      <g transform="translate(910,540)">
+        <circle r="20" fill="white" stroke="rgba(46,125,50,0.2)" stroke-width="1.5"/>
+        <text x="0" y="-6" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#1B5E20" font-weight="700">N</text>
+        <polygon points="0,-16 3.5,-4 0,-7 -3.5,-4" fill="#2E7D32" opacity=".85"/>
+        <polygon points="0,16 3.5,4 0,7 -3.5,4" fill="#9AA090" opacity=".6"/>
+      </g>
+
+      <!-- ACTIVE HIGHLIGHT -->
+      <rect id="ahl" x="0" y="0" width="0" height="0" rx="12" fill="none" stroke="#FFD600" stroke-width="3" stroke-dasharray="8,4" opacity="0" pointer-events="none" filter="url(#glow)"/>
+    </svg>
+  </div>
+
+  <!-- DETAIL PANEL -->
+  <div class="detail" id="detail">
+    <div class="dh">
+      <div class="dicon" id="di"></div>
+      <div>
+        <div class="dw" id="dw"></div>
+        <div class="dtitle" id="dt"></div>
+        <div class="ddate" id="dd"></div>
+      </div>
+      <button class="dclose" onclick="closeD()">✕ Cerrar</button>
+    </div>
+    <div class="dgrid">
+      <div class="ditem"><h5>📍 Lugar</h5><p id="dl"></p></div>
+      <div class="ditem"><h5>📅 Fecha exacta</h5><p id="dfe"></p></div>
+      <div class="ditem"><h5>🎨 Actividades</h5><p id="da"></p></div>
+      <div class="ditem"><h5>🎯 Objetivo</h5><p id="do"></p></div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="tl-section">
+    <h3>🗓️ Línea de tiempo semestral · Sesiones quincenales</h3>
+    <div class="tl" id="tl"></div>
+  </div>
+</main>
+</div>
+
+<script>
+const sessions = [
+  { id:'s1', week:'Semana 4', title:'Integración', emoji:'🤝', bld:'verde',
+    color:'#2E7D32', bg:'#E8F5E9', tc:'#1B5E20',
+    dates:'20–22 feb 2026', lugar:'Área verde · jardines del campus',
+    activities:'Dinámicas rompehielo, presentación de parejas buddy',
+    obj:'Romper el hielo y generar confianza inicial entre pares',
+    bx:270,by:155,bw:130,bh:200 },
+  { id:'s2', week:'Semana 6', title:'Recreativa', emoji:'🏀', bld:'deportivo',
+    color:'#E65100', bg:'#FFF3E0', tc:'#7B2D00',
+    dates:'6–8 mar 2026', lugar:'Centro Deportivo Borregos I · Canchas de básquetbol',
+    activities:'Juegos adaptados, actividad física ligera, básquet amistoso',
+    obj:'Convivir en movimiento, fomentar trabajo en equipo inclusivo',
+    bx:58,by:370,bw:200,bh:130 },
+  { id:'s3', week:'Semana 8', title:'Creatividad', emoji:'🎨', bld:'aulas',
+    color:'#1565C0', bg:'#E3F0FF', tc:'#0D47A1',
+    dates:'10–12 abr 2026', lugar:'Edificios III–IV–V · Salones de aulas',
+    activities:'Dibujo libre, manualidades, proyectos creativos en pareja',
+    obj:'Expresión creativa compartida; cada par crea algo juntos',
+    bx:420,by:48,bw:200,bh:95 },
+  { id:'s4', week:'Semana 10', title:'Convivencia', emoji:'☕', bld:'estudiantil',
+    color:'#6A1B9A', bg:'#F3E5F5', tc:'#4A148C',
+    dates:'8–10 may 2026', lugar:'Centro Estudiantil · mesas de convivencia',
+    activities:'Plática libre, snacks, música de fondo, juegos de mesa',
+    obj:'Fortalecer el vínculo en ambiente informal y cómodo',
+    bx:640,by:152,bw:130,bh:100 },
+  { id:'s5', week:'Semana 12', title:'Trabajo en equipo', emoji:'🌿', bld:'verde',
+    color:'#2E7D32', bg:'#E8F5E9', tc:'#1B5E20',
+    dates:'5–7 jun 2026', lugar:'Áreas verdes · jardines y andadores del campus',
+    activities:'Dinámicas grupales de cooperación, retos al aire libre',
+    obj:'Fortalecer vínculos grupales entre todos los equipos',
+    bx:270,by:155,bw:130,bh:200 },
+  { id:'s6', week:'Semana 14', title:'Actividad libre', emoji:'🌟', bld:'libre',
+    color:'#AD1457', bg:'#FCE4EC', tc:'#880E4F',
+    dates:'A coordinar · semana 14', lugar:'Espacio elegido por los buddies dentro del campus',
+    activities:'Actividad decidida completamente por la pareja de buddies',
+    obj:'Autonomía y decisión propia; máxima libertad de elección',
+    bx:420,by:278,bw:195,bh:80 },
+  { id:'s7', week:'Semana 16', title:'Cierre', emoji:'🎓', bld:'aulas',
+    color:'#00695C', bg:'#E0F2F1', tc:'#004D40',
+    dates:'Jun 9–14, 2026', lugar:'Salón o área verde · espacio de reflexión',
+    activities:'Reflexión final, cartas de agradecimiento, diplomas, fotos',
+    obj:'Celebrar la amistad construida y cerrar el semestre con emoción',
+    bx:420,by:48,bw:200,bh:95 },
+];
+
+// Build sidebar
+const sl = document.getElementById('slist');
+sessions.forEach(s => {
+  const c = document.createElement('div');
+  c.className='scard'; c.id='c-'+s.id;
+  c.style.cssText=`background:${s.bg};color:${s.tc};`;
+  c.innerHTML=`<div class="sw">${s.week}</div>
+    <div class="stitle">${s.emoji} ${s.title}</div>
+    <div class="sdate">📅 ${s.dates}</div>
+    <div class="sloc">📍 ${s.lugar}</div>
+    <div class="sact">${s.activities.substring(0,65)}…</div>`;
+  c.addEventListener('click',()=>sel(s));
+  sl.appendChild(c);
+});
+
+// Build timeline
+const tl = document.getElementById('tl');
+sessions.forEach((s,i) => {
+  const t = document.createElement('div');
+  t.className='tlstep'; t.id='t-'+s.id;
+  t.innerHTML=`<div class="tldot">${s.emoji}</div><div class="tllabel">${s.title}<small>${s.dates.split('·')[0]}</small></div>`;
+  t.addEventListener('click',()=>sel(s));
+  tl.appendChild(t);
+});
+
+// Zone click
+document.querySelectorAll('.bzone').forEach(el=>{
+  el.addEventListener('click',e=>{
+    const b=el.dataset.bld;
+    const s=sessions.find(s=>s.bld===b);
+    if(s) sel(s);
+  });
+  el.addEventListener('mouseenter',e=>{
+    const b=el.dataset.bld;
+    const s=sessions.find(s=>s.bld===b);
+    if(!s)return;
+    const tip=document.getElementById('tip');
+    const wrap=document.getElementById('mapWrap');
+    const wr=wrap.getBoundingClientRect();
+    const er=el.getBoundingClientRect();
+    document.getElementById('tth').textContent=s.emoji+' '+s.title;
+    document.getElementById('ttp').textContent=s.dates+' · '+s.lugar.split('·')[0];
+    tip.style.left=(er.left-wr.left+er.width/2-90)+'px';
+    tip.style.top=(er.top-wr.top-66)+'px';
+    tip.classList.add('on');
+  });
+  el.addEventListener('mouseleave',()=>document.getElementById('tip').classList.remove('on'));
+});
+
+function sel(s){
+  document.querySelectorAll('.scard').forEach(c=>c.classList.remove('active'));
+  const c=document.getElementById('c-'+s.id);
+  if(c){c.classList.add('active');c.scrollIntoView({block:'nearest',behavior:'smooth'});}
+  document.querySelectorAll('.tlstep').forEach((t,i)=>{
+    t.classList.remove('active','done');
+    const idx=sessions.findIndex(x=>x.id===s.id);
+    if(i<idx) t.classList.add('done');
+    if(sessions[i].id===s.id) t.classList.add('active');
+  });
+  const dp=document.getElementById('detail');
+  dp.classList.add('on');
+  document.getElementById('di').textContent=s.emoji;
+  document.getElementById('di').style.cssText=`background:${s.bg};`;
+  document.getElementById('dw').textContent=s.week+' · Best Buddies × Tec Querétaro';
+  document.getElementById('dt').textContent=s.title;
+  document.getElementById('dd').style.color=s.color;
+  document.getElementById('dd').textContent='📅 '+s.dates;
+  document.getElementById('dl').textContent=s.lugar;
+  document.getElementById('dfe').textContent=s.dates;
+  document.getElementById('da').textContent=s.activities;
+  document.getElementById('do').textContent=s.obj;
+  const hl=document.getElementById('ahl');
+  hl.setAttribute('x',s.bx-5); hl.setAttribute('y',s.by-5);
+  hl.setAttribute('width',s.bw+10); hl.setAttribute('height',s.bh+10);
+  hl.setAttribute('stroke',s.color); hl.setAttribute('opacity','1');
+  dp.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closeD(){
+  document.getElementById('detail').classList.remove('on');
+  document.getElementById('ahl').setAttribute('opacity','0');
+  document.querySelectorAll('.scard').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.tlstep').forEach(t=>t.classList.remove('active','done'));
+}
+</script>
+</body>
+</html>
